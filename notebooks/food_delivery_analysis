@@ -1,0 +1,22 @@
+import pandas as pd
+import sqlite3
+
+# Step 1: Load CSV data
+orders = pd.read_csv("orders.csv")
+
+# Step 2: Load JSON data
+users = pd.read_json("users.json")
+
+# Step 3: Load SQL data
+conn = sqlite3.connect(":memory:")
+with open("restaurants.sql", "r") as file:
+    conn.executescript(file.read())
+
+restaurants = pd.read_sql("SELECT * FROM restaurants", conn)
+
+# Step 4: Merge datasets using LEFT JOIN
+merged_df = orders.merge(users, on="user_id", how="left")
+merged_df = merged_df.merge(restaurants, on="restaurant_id", how="left")
+
+# Step 5: Save final dataset
+merged_df.to_csv("final_food_delivery_dataset.csv", index=False)
